@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AsignacionDTO } from '../../../models/asignacion.model';
-import { AsignacionService } from '../../../services/asignacion.service';
+import { AsignacionDosaje } from '../../../models/dosaje.model';
+import { DosajeService } from '../../../services/dosaje.service';
 import { Documento } from '../../../models/documento.model';
 import { DocumentoService } from '../../../services/documento.service';
 import { EmpleadoDTO } from '../../../models/empleado.model';
@@ -12,12 +12,12 @@ import { EmpleadoService } from '../../../services/Empleado.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  selector: 'app-asignacion-registro',
-  templateUrl: './asignacion-registro.component.html',
+  selector: 'app-asignacion-dosaje-registro',
+  templateUrl: './asignacion-dosaje-registro.component.html',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, FormsModule]
 })
-export class AsignacionRegistroComponent implements OnInit {
+export class AsignacionDosajeRegistroComponent implements OnInit {
   asignacionForm!: FormGroup;
   editMode = false;
   currentUserRole: string = '';
@@ -40,7 +40,7 @@ export class AsignacionRegistroComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private asignacionService: AsignacionService,
+    private dosajeService: DosajeService, // ✅ Usamos DosajeService
     private documentoService: DocumentoService,
     private empleadoService: EmpleadoService,
     private authService: AuthService
@@ -50,32 +50,30 @@ export class AsignacionRegistroComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     this.currentUserRole = user?.rol || '';
 
-    // Roles que tienen edición limitada en ciertos campos
     this.esRolLimitado = ['Auxiliar de Toxicologia'].includes(this.currentUserRole);
-    // Roles que pueden cambiar el estado
-    this.puedeEditarEstado = ['Administrador', 'Auxiliar de Dosaje'].includes(this.currentUserRole);
+    this.puedeEditarEstado = ['Administrador', 'Auxiliar de Dosaje','Quimico Farmaceutico'].includes(this.currentUserRole);
 
     this.asignacionForm = this.fb.group({
       id: [null],
-      area: [''],
-      cualitativo: [''], // ← Ahora almacena el valor cuantitativo (ej: "0.85")
-      documentoSalida: [''],
-      fecha: [''],
-      estado: [''],
-      documentoId: [null],
-      empleadoId: [null]
+      area: ['Laboratorio de Dosaje'],
+      cualitativo: [''],
+      estado: ['', Validators.required],
+      documentoId: [null, Validators.required],
+      empleadoId: [null, Validators.required]
     });
 
-    // Cargar documentos
     this.documentoService.getDocumentos().subscribe({
       next: (data: Documento[]) => {
-        this.documentos = data;
+        // ✅ FILTRO CLAVE: Solo documentos con "INFORME PERICIAL DE DOSAJE"
+        this.documentos = data.filter(doc => 
+          (doc.nombreDocumento || '').toLowerCase().includes('informe pericial de dosaje') ||
+          (doc.nombreDocumento || '').toLowerCase().includes('INFORME PERICIAL DE DOSAJE') 
+        );
         this.documentosFiltrados = [...this.documentos];
       },
       error: (err: any) => console.error('Error cargando documentos', err)
     });
 
-    // ✅ Cargar SOLO empleados Químico Farmacéutico
     this.empleadoService.getAll().subscribe({
       next: (data: EmpleadoDTO[]) => {
         this.empleados = data.filter(emp => 
@@ -87,9 +85,9 @@ export class AsignacionRegistroComponent implements OnInit {
       error: (err: any) => console.error('Error cargando empleados', err)
     });
 
-    // Cargar asignaciones para bloquear documentos ya asignados
-    this.asignacionService.getAsignaciones().subscribe({
-      next: (asignaciones: AsignacionDTO[]) => {
+    // ✅ Usar dosajeService.listar() en lugar de getAsignaciones()
+    this.dosajeService.listar().subscribe({
+      next: (asignaciones: AsignacionDosaje[]) => {
         this.documentosAsignados = asignaciones
           .filter(a => a.documentoId !== null)
           .map(a => a.documentoId!);
@@ -106,18 +104,16 @@ export class AsignacionRegistroComponent implements OnInit {
       error: (err: any) => console.error('Error cargando asignaciones', err)
     });
 
-    // Modo edición
     this.route.params.subscribe(params => {
       const id = params['id'];
       if (id) {
         this.editMode = true;
-        this.asignacionService.getAsignacionById(id).subscribe((asignacion: AsignacionDTO) => {
+        // ✅ Usar dosajeService
+        this.dosajeService.obtenerPorId(id).subscribe((asignacion: AsignacionDosaje) => {
           this.asignacionForm.patchValue({
             id: asignacion.id,
             area: asignacion.area,
             cualitativo: asignacion.cualitativo,
-            documentoSalida: asignacion.documentoSalida,
-            fecha: asignacion.fecha,
             estado: asignacion.estado,
             documentoId: asignacion.documentoId,
             empleadoId: asignacion.empleadoId
@@ -153,6 +149,7 @@ export class AsignacionRegistroComponent implements OnInit {
     const term = this.terminoBusqueda.toLowerCase().trim();
     this.documentosFiltrados = this.documentos.filter(doc =>
       doc.nroOficio.toLowerCase().includes(term) ||
+      doc.nombreDocumento.toLowerCase().includes(term) ||
       doc.procedencia.toLowerCase().includes(term) ||
       (doc.nombres + ' ' + doc.apellidos).toLowerCase().includes(term)
     );
@@ -183,9 +180,8 @@ export class AsignacionRegistroComponent implements OnInit {
     this.empleadoSeleccionadoNombre = `${empleado.nombre} ${empleado.apellido}`;
   }
 
-  // ✅ Nueva función: permiso para editar resultado cuantitativo
   puedeEditarResultadoCuantitativo(): boolean {
-    return ['Químico Farmacéutico', 'Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole);
+    return ['Quimico Farmaceutico', 'Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole);
   }
 
   puedeEditarEstadoCampo(): boolean {
@@ -199,14 +195,14 @@ export class AsignacionRegistroComponent implements OnInit {
   onSubmit(): void {
     if (this.asignacionForm.valid) {
       const formValue = this.asignacionForm.getRawValue();
-      const asignacion: AsignacionDTO = { ...formValue };
+      const asignacion: AsignacionDosaje = { ...formValue };
 
       const req$ = this.editMode && asignacion.id
-        ? this.asignacionService.updateAsignacion(asignacion.id, asignacion)
-        : this.asignacionService.createAsignacion(asignacion);
+        ? this.dosajeService.actualizar(asignacion.id, asignacion) // ✅
+        : this.dosajeService.crear(asignacion); // ✅
 
       req$.subscribe({
-        next: () => this.router.navigate(['/dashboard/asignaciones']),
+        next: () => this.router.navigate(['/dashboard/asignaciones-dosaje']),
         error: (err: any) => {
           console.error('Error guardando asignación', err);
           alert('❌ Error al guardar la asignación.');
@@ -216,6 +212,6 @@ export class AsignacionRegistroComponent implements OnInit {
   }
 
   cancelar(): void {
-    this.router.navigate(['/dashboard/asignaciones']);
+    this.router.navigate(['/dashboard/asignaciones-dosaje']);
   }
 }

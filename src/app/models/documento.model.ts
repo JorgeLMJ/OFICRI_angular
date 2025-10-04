@@ -1,6 +1,7 @@
 export interface Documento {
   //oficio
   id?: number;
+  nombreDocumento: string;
   nro_registro: number;
   fechaIngreso: string;
   nroOficio: string;
@@ -22,7 +23,6 @@ export interface Documento {
   tipoMuestra: string;
   personaQueConduce: string;
   cualitativo: string;
-  cuantitativo: string;
 
   // ✅ NUEVO
   anexos?: {

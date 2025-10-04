@@ -1,16 +1,13 @@
+<!-- En la tabla, agrega una nueva columna para Estado -->
 <div class="container mt-4">
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="text-primary">
       <i class="bi bi-person-badge me-2"></i> Gestión de Empleados
     </h2>
-
-    <div>
-      <!-- 🚀 Ahora abre la página de registro -->
-      <button class="btn btn-success me-2" (click)="nuevoEmpleado()">
-        <i class="bi bi-person-plus me-2"></i> Nuevo Empleado
-      </button>
-    </div>
+    <button class="btn btn-success me-2" (click)="nuevoEmpleado()">
+      <i class="bi bi-person-plus me-2"></i> Nuevo Empleado
+    </button>
   </div>
 
   <!-- 🔎 Buscador -->
@@ -33,6 +30,7 @@
           <th>DNI</th>
           <th>Cargo</th>
           <th>Teléfono</th>
+          <th>Estado</th> <!-- ✅ Nueva columna -->
           <th>Usuario</th>
           <th>Acciones</th>
         </tr>
@@ -46,12 +44,20 @@
           <td>{{ emp.cargo }}</td>
           <td>{{ emp.telefono }}</td>
           <td>
+          <button
+            class="btn btn-sm"
+            [class.btn-success]="emp.estado === 'ACTIVO'"
+            [class.btn-outline-danger]="emp.estado === 'INACTIVO'"
+            disabled>
+            {{ emp.estado === 'ACTIVO' ? '✅ Activo' : '❌ Inactivo' }}
+          </button>
+        </td>
+          <td>
             <span class="badge bg-info">
               <i class="bi bi-person-circle me-1"></i> {{ emp.usuarioId }}
             </span>
           </td>
           <td>
-            <!-- 🚀 editar navega a registro con ID -->
             <button class="btn btn-sm btn-warning me-2" (click)="editarEmpleado(emp.id!)">
               <i class="bi bi-pencil-square"></i>
             </button>
@@ -61,7 +67,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredEmpleados.length === 0">
-          <td colspan="8" class="text-center text-muted">No se encontraron resultados</td>
+          <td colspan="9" class="text-center text-muted">No se encontraron resultados</td>
         </tr>
       </tbody>
     </table>
@@ -72,9 +78,7 @@
     <button class="btn btn-outline-primary btn-sm" (click)="prevPage()" [disabled]="currentPage === 1">
       ⬅ Anterior
     </button>
-
     <span>Página {{ currentPage }} de {{ totalPages }}</span>
-
     <button class="btn btn-outline-primary btn-sm" (click)="nextPage()" [disabled]="currentPage === totalPages">
       Siguiente ➡
     </button>

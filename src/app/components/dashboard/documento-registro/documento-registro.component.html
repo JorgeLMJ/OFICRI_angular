@@ -1,4 +1,3 @@
-<!-- ✅ Botón para subir archivo y extraer con IA -->
 <div class="mb-4 p-3 bg-light border rounded">
   <h5 class="text-primary mb-3"><i class="bi bi-cloud-upload me-2"></i>📤 Subir Oficio</h5>
   <div class="d-flex align-items-center">
@@ -21,28 +20,49 @@
       <form [formGroup]="documentoForm" (ngSubmit)="onSubmit()" novalidate>
         
         <div class="mb-4 p-3 bg-light rounded">
-          <h5 class="text-primary mb-4"><i class="bi bi-file-earmark me-2"></i>📄 Oficio</h5>
-
-          <!-- ✅ N° Registro, N° Oficio y Fecha en una sola fila -->
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <label class="form-label">N° Registro *</label>
-              <input type="number" class="form-control" formControlName="nro_registro" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">N° Oficio *</label>
-              <input type="number" class="form-control" formControlName="nroOficio" placeholder="Ingrese número" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Fecha de Oficio *</label>
-              <input type="date" class="form-control" formControlName="fechaIngreso" required>
-            </div>
-          </div>
-
-          <!-- ✅ Textareas para Nombre Oficio y Asunto -->
+          <h5 class="text-primary mb-4"><i class="bi bi-file-earmark me-2"></i>📄 Oficio
+          
+          </h5>
+    <div class="row mb-3">
+  <div class="col-md-3" *ngIf="false">
+    <label class="form-label">Nombre Documento</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      formControlName="nombreDocumento" 
+      placeholder="Ej: INFORME PERICIAL DE DOSAJE ETILICO"
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">N° Registro</label>
+    <input 
+      type="number" 
+      class="form-control" 
+      formControlName="nro_registro" 
+      placeholder="Ingrese el n° de registro"
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">N° Oficio</label>
+    <input 
+      type="number" 
+      class="form-control" 
+      formControlName="nroOficio" 
+      placeholder="Ingrese número" 
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Fecha de Oficio</label>
+    <input 
+      type="date" 
+      class="form-control" 
+      formControlName="fechaIngreso" 
+      required>
+  </div>
+</div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Nombre Oficio *</label>
+              <label class="form-label">Nombre Oficio</label>
               <textarea 
                 class="form-control" 
                 formControlName="nombreOficio" 
@@ -52,7 +72,7 @@
               ></textarea>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Asunto *</label>
+              <label class="form-label">Asunto</label>
               <textarea 
                 class="form-control" 
                 formControlName="asunto" 
@@ -64,26 +84,26 @@
           </div>
           
           <div class="row mb-3">
-            <div class="col-md-3"><label class="form-label">Nombres *</label><input type="text" class="form-control" formControlName="nombres" required></div>
-            <div class="col-md-3"><label class="form-label">Apellidos *</label><input type="text" class="form-control" formControlName="apellidos" required></div>
-            <div class="col-md-3"><label class="form-label">Edad *</label><input type="number" class="form-control" formControlName="edad" required></div>
-            <div class="col-md-3"><label class="form-label">DNI o CE *</label><input type="text" class="form-control" formControlName="dni" required></div>
+            <div class="col-md-3"><label class="form-label">Nombres</label><input type="text" class="form-control" formControlName="nombres" required></div>
+            <div class="col-md-3"><label class="form-label">Apellidos</label><input type="text" class="form-control" formControlName="apellidos" required></div>
+            <div class="col-md-3"><label class="form-label">Edad</label><input type="number" class="form-control" formControlName="edad" required></div>
+            <div class="col-md-3"><label class="form-label">DNI o CE</label><input type="text" class="form-control" formControlName="dni" required></div>
           </div>
 
           <div class="row mb-3">
-            <div class="col-md-6"><label class="form-label">Situación *</label><input type="text" class="form-control" formControlName="situacion" required></div>
-            <div class="col-md-6"><label class="form-label">Delito/Infracción *</label><input type="text" class="form-control" formControlName="delitoInfraccion" required></div>
+            <div class="col-md-6"><label class="form-label">Situación</label><input type="text" class="form-control" formControlName="situacion" required></div>
+            <div class="col-md-6"><label class="form-label">Delito/Infracción</label><input type="text" class="form-control" formControlName="delitoInfraccion" required></div>
           </div>
 
           <div class="row mb-3">
-            <div class="col-md-6"><label class="form-label">Fecha y hora del Incidente *</label><input type="datetime-local" class="form-control" formControlName="fechaHoraIncidente" required></div>
-            <div class="col-md-6"><label class="form-label">Procedencia *</label><input type="text" class="form-control" formControlName="procedencia" required></div>
+            <div class="col-md-6"><label class="form-label">Fecha y hora del Incidente</label><input type="datetime-local" class="form-control" formControlName="fechaHoraIncidente" required></div>
+            <div class="col-md-6"><label class="form-label">Procedencia</label><input type="text" class="form-control" formControlName="procedencia" required></div>
           </div>
         </div>
 
         <div class="mb-4 p-3 bg-light rounded">
-           <h5 class="text-primary mb-4"><i class="bi bi-droplet me-2"></i>🧪 Acta de Toma de Muestra</h5>
-           <div class="row mb-3">
+          <h5 class="text-primary mb-4"><i class="bi bi-droplet me-2"></i>🧪 Acta de Toma de Muestra</h5>
+          <div class="row mb-3">
             <div class="col-md-4"><label class="form-label">Fecha Acta</label><input type="date" class="form-control" formControlName="fechaActa"></div>
             <div class="col-md-4"><label class="form-label">Hora Toma de Muestra</label><input type="time" class="form-control" formControlName="horaTomaMuestra"></div>
             <div class="col-md-4">
@@ -95,9 +115,10 @@
               </div>
             </div>
           </div>
+
           <div class="row mb-3">
-            <div class="col-md-4"><label class="form-label">Persona que Conduce</label><input type="text" class="form-control" formControlName="personaQueConduce"></div>
-            <div class="col-md-4">
+            <div class="col-md-6"><label class="form-label">Persona que Conduce</label><input type="text" class="form-control" formControlName="personaQueConduce"></div>
+            <div class="col-md-6">
               <label class="form-label">Cualitativo</label>
               <div class="btn-group w-100">
                   <button type="button" class="btn btn-sm btn-outline-success" [class.active]="documentoForm.get('cualitativo')?.value === 'POSITIVO'" (click)="documentoForm.patchValue({ cualitativo: 'POSITIVO' })">POSITIVO</button>
@@ -105,28 +126,15 @@
                   <button type="button" class="btn btn-sm btn-outline-secondary" [class.active]="documentoForm.get('cualitativo')?.value === 'INDETERMINADO'" (click)="documentoForm.patchValue({ cualitativo: 'INDETERMINADO' })">INDETERMINADO</button>
               </div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Cuantitativo</label>
-              <div class="input-group">
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  formControlName="cuantitativo" 
-                  step="0.01" 
-                  placeholder=""
-                  [attr.readonly]="!isAdmin ? true : null"
-                >
-                <span class="input-group-text">g/l</span>
-              </div>
-            </div>
           </div>
+          
         </div>
 
         <div class="mb-4 p-3 bg-light rounded">
           <h5 class="text-primary mb-4"><i class="bi bi-paperclip me-2"></i>📎 Anexos</h5>
           <div formGroupName="anexos" class="row">
             <div class="col-md-6">
-              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="cadenaCustodia" formControlName="cadenaCustodia"><label class="form-check-label" for="cadenaCustodia">Un (01) Formato de cadena de custodia.</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="cadenaCustodia" formControlName="cadenaCustodia"><label class="form-check-label" for="cadenaCustodia">Formato de cadena de custodia.</label></div>
               <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="rotulo" formControlName="rotulo"><label class="form-check-label" for="rotulo">Rotulo</label></div>
               <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaTomaMuestra" formControlName="actaTomaMuestra"><label class="form-check-label" for="actaTomaMuestra">Acta de toma de muestra</label></div>
               <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaConsentimiento" formControlName="actaConsentimiento"><label class="form-check-label" for="actaConsentimiento">Acta de consentimiento</label></div>

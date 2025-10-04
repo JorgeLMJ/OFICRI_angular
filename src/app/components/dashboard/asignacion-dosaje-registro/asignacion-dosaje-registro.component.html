@@ -1,11 +1,11 @@
-<!-- src/app/components/dashboard/asignacion-registro/asignacion-registro.component.html -->
+<!-- src/app/components/dashboard/asignacion-dosaje-registro/asignacion-dosaje-registro.component.html -->
 
 <div class="container mt-4">
   <div class="card shadow-lg">
     <div class="card-header bg-primary text-white">
       <h4 class="mb-0">
         <i class="bi bi-journal-plus me-2"></i>
-        {{ asignacionForm.get('id')?.value ? 'Editar Asignación' : 'Registrar Asignación' }}
+        {{ asignacionForm.get('id')?.value ? 'Editar Asignación Dosaje' : 'Registrar Asignación Dosaje' }}
       </h4>
     </div>
 
@@ -15,15 +15,14 @@
         <!-- 🔹 Fila 1: Área y Documento -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label">Área *</label>
+            <label class="form-label">Área</label>
             <input type="text" 
                    class="form-control" 
                    formControlName="area" 
-                   placeholder="Ingrese área (Toxicología, Dosaje, etc.)"
-                   [readonly]="esRolLimitado">
+                   [readonly]="true">
           </div>
           <div class="col-md-6">
-            <label class="form-label">Documento *</label>
+            <label class="form-label">Documento</label>
             <div class="input-group">
               <input type="text"
                      class="form-control"
@@ -44,7 +43,7 @@
         <!-- 🔹 Fila 2: Empleado -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label">Empleado *</label>
+            <label class="form-label">Empleado</label>
             <div class="input-group">
               <input type="text"
                      class="form-control"
@@ -63,64 +62,43 @@
         </div>
 
         <!-- 🔹 Fila 3: Resultado Cuantitativo y Estado -->
-<div class="row mb-3">
-  <div class="col-md-6">
-    <label class="form-label">Resultado Cuantitativo (g/l)</label>
-    <div class="input-group">
-      <input 
-        type="number" 
-        class="form-control" 
-        formControlName="cualitativo" 
-        placeholder="Ej: 0.85"
-        step="0.01"
-        min="0"
-        [readonly]="!puedeEditarResultadoCuantitativo()">
-      <span class="input-group-text">g/l</span>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <label class="form-label">Estado *</label>
-    <!-- ✅ Botones de estado condicionales -->
-    <div class="btn-group w-100" role="group" *ngIf="puedeEditarEstadoCampo()">
-      <button type="button"
-              class="btn btn-outline-warning w-50"
-              [class.active]="asignacionForm.get('estado')?.value === 'EN_PROCESO'"
-              (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
-        <i class="bi bi-hourglass-split me-1"></i> EN PROCESO
-      </button>
-      <button type="button"
-              class="btn btn-outline-success w-50"
-              [class.active]="asignacionForm.get('estado')?.value === 'COMPLETADO'"
-              (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
-        <i class="bi bi-check-circle-fill me-1"></i> COMPLETADO
-      </button>
-    </div>
-    <!-- ✅ Solo lectura para Jefes -->
-    <input type="text"
-           class="form-control"
-           *ngIf="!puedeEditarEstadoCampo()"
-           [value]="asignacionForm.get('estado')?.value"
-           readonly>
-    <input type="hidden" formControlName="estado">
-  </div>
-</div>
-
-        <!-- 🔹 Fila 4: Documento de Salida y Fecha -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label">Documento de Salida</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="documentoSalida" 
-                   placeholder="Número de documento de salida"
-                   [readonly]="esRolLimitado">
+            <label class="form-label">Resultado Cuantitativo (g/l)</label>
+            <div class="input-group">
+              <input 
+                type="number" 
+                class="form-control" 
+                formControlName="cualitativo" 
+                placeholder="Ej: 0.85"
+                step="0.01"
+                min="0"
+                [readonly]="!puedeEditarResultadoCuantitativo()">
+              <span class="input-group-text">g/l</span>
+            </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Fecha *</label>
-            <input type="date" 
-                   class="form-control" 
-                   formControlName="fecha"
-                   [readonly]="esRolLimitado">
+            <label class="form-label">Estado</label>
+            <div class="btn-group w-100" role="group" *ngIf="puedeEditarEstadoCampo()">
+              <button type="button"
+                      class="btn btn-outline-warning w-50"
+                      [class.active]="asignacionForm.get('estado')?.value === 'EN_PROCESO'"
+                      (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
+                <i class="bi bi-hourglass-split me-1"></i> EN PROCESO
+              </button>
+              <button type="button"
+                      class="btn btn-outline-success w-50"
+                      [class.active]="asignacionForm.get('estado')?.value === 'COMPLETADO'"
+                      (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
+                <i class="bi bi-check-circle-fill me-1"></i> COMPLETADO
+              </button>
+            </div>
+            <input type="text"
+                   class="form-control"
+                   *ngIf="!puedeEditarEstadoCampo()"
+                   [value]="asignacionForm.get('estado')?.value"
+                   readonly>
+            <input type="hidden" formControlName="estado">
           </div>
         </div>
 
@@ -141,7 +119,7 @@
 
 <!-- 🌟 Modal para seleccionar documento -->
 <div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Seleccionar Documento</h5>
@@ -160,6 +138,7 @@
             <tr>
               <th>ID</th>
               <th>N° Oficio</th>
+              <th>Nombre documento</th>
               <th>Procedencia</th>
               <th>Involucrado</th>
               <th>Estado</th>
@@ -170,6 +149,7 @@
             <tr *ngFor="let doc of documentosFiltrados">
               <td>{{ doc.id }}</td>
               <td>{{ doc.nroOficio }}</td>
+              <td>{{ doc.nombreDocumento}}</td>
               <td>{{ doc.procedencia }}</td>
               <td>{{ doc.nombres }} {{ doc.apellidos }}</td>
               <td>
@@ -205,7 +185,7 @@
 
 <!-- 🌟 Modal para seleccionar empleado -->
 <div class="modal fade" id="empleadoModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Seleccionar Empleado</h5>

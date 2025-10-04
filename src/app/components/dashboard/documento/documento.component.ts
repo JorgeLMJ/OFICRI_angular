@@ -52,8 +52,30 @@ export class DocumentoComponent implements OnInit {
 
   get filteredDocumentos(): Documento[] {
     const q = this.searchTerm.trim().toLowerCase();
-    if (!q) return [...this.documentos];
-    return this.documentos.filter(doc =>
+    const currentUser = this.authService.getCurrentUser();
+    const userRole = currentUser?.rol || '';
+
+    // Filtrar por rol del usuario
+    let documentosPorRol = this.documentos;
+
+    if (userRole === 'Auxiliar de Dosaje') {
+      documentosPorRol = this.documentos.filter(doc =>
+        doc.nombreDocumento?.toUpperCase().includes('DOSAJE')
+      );
+    } else if (userRole === 'Auxiliar de Toxicologia') {
+      documentosPorRol = this.documentos.filter(doc =>
+        doc.nombreDocumento?.toUpperCase().includes('TOXICOLÓGIA') ||
+        doc.nombreDocumento?.toUpperCase().includes('TOXICOLOGIA')
+      );
+    }
+    // Si el rol no es ninguno de los dos (ej. admin), se muestran todos
+
+    // Aplicar búsqueda adicional si hay término
+    if (!q) {
+      return documentosPorRol;
+    }
+
+    return documentosPorRol.filter(doc =>
       doc.nroOficio.toLowerCase().includes(q) ||
       doc.procedencia.toLowerCase().includes(q) ||
       doc.nombres.toLowerCase().includes(q) ||
@@ -64,8 +86,8 @@ export class DocumentoComponent implements OnInit {
       doc.tipoMuestra?.toLowerCase().includes(q) ||
       doc.personaQueConduce?.toLowerCase().includes(q) ||
       doc.cualitativo?.toLowerCase().includes(q) ||
-      doc.cuantitativo?.toLowerCase().includes(q)||
-      doc.nro_registro.toString().includes(q)
+      doc.nro_registro.toString().includes(q) ||
+      (doc.nombreDocumento || '').toLowerCase().includes(q)
     );
   }
 
@@ -161,7 +183,43 @@ export class DocumentoComponent implements OnInit {
       : '<p>No se especificaron anexos.</p>';
 
     const currentUser = this.authService.getCurrentUser();
+    const userRole = currentUser?.rol || '';
     const nombreUsuarioActual = currentUser?.nombre || 'Usuario del Sistema';
+
+    // ✅ Usar nombreDocumento si existe, sino usar lógica por rol
+    let tituloInforme = doc.nombreDocumento || 'INFORME PERICIAL';
+    let rutaFirma = '/assets/img/firma_informe_dosaje.png';
+    
+    // Si no hay nombreDocumento, usar rol para definir título y firma
+    if (!doc.nombreDocumento) {
+      if (userRole === 'Auxiliar de Dosaje') {
+        tituloInforme = 'INFORME PERICIAL DE DOSAJE ETÍLICO';
+        rutaFirma = '/assets/img/firma_informe_dosaje.png';
+      } else if (userRole === 'Auxiliar de Toxicologia') {
+        tituloInforme = 'INFORME PERICIAL TOXICOLÓGICO';
+        rutaFirma = '/assets/img/firma_informe_toxicologico.png';
+      }
+    } else {
+      // Si hay nombreDocumento, usar firma según el contenido del título
+      if (doc.nombreDocumento.includes('DOSAJE')) {
+        rutaFirma = '/assets/img/firma_informe_dosaje.png';
+      } else if (doc.nombreDocumento.includes('TOXICOLÓGICO') || doc.nombreDocumento.includes('TOXICOLOGIA')) {
+        rutaFirma = '/assets/img/firma_informe_toxicologico.png';
+      }
+    }
+
+    // ✅ Valores para la tabla
+    const valorCualitativo = doc.cualitativo || '';
+    let valorCuantitativo = '0.0 g/l';
+    let valorCuantitativoTexto = '0.0 g/l (Cero gramos con cero cero cg x l. de sangre)';
+    
+    if (userRole === 'Auxiliar de Dosaje') {
+      valorCuantitativo = '0.0 g/l';
+      valorCuantitativoTexto = '0.0 g/l (Cero gramos con cero cero cg x l. de sangre)';
+    } else if (userRole === 'Auxiliar de Toxicologia') {
+      valorCuantitativo = valorCualitativo;
+      valorCuantitativoTexto = valorCualitativo;
+    }
 
     const fechaIncidente = formatFechaInforme(doc.fechaIncidente);
     const fechaTomaMuestra = formatFechaInforme(doc.fechaActa || doc.fechaIncidente);
@@ -178,7 +236,7 @@ export class DocumentoComponent implements OnInit {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Vista Previa - Informe Pericial</title>
+    <title>${tituloInforme}</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -253,34 +311,22 @@ export class DocumentoComponent implements OnInit {
             border: 1px solid #000; 
             padding: 2px; 
         }
-        .signature-area { 
-            text-align: right; 
-           
-            padding-right: 25px;
-        }
+
         .signature-block { 
-    display: inline-block;         
-    text-align: center; 
-    width: 250px; /* Asegura que la fecha no se desborde */
-}
-.signature-block p { 
-    margin: 2px 0; 
-    font-size: 9px; 
-    font-weight: bold;
-}
-.signature-line { 
-    border-top: 1px dotted #000; 
-    width: 100%; 
-    margin: 5px auto; 
-}
-.date-in-signature { 
-    text-align: left !important;
-    margin: 0 0 70px 0 !important;
-    font-size: 12px !important;
-    width: 100% !important;
-    display: block !important;
-    padding-left: 0 !important;
-}
+            display: inline-block;      
+            text-align: center; 
+            width: 250px;
+        }
+        .signature-block p { 
+            margin: 2px 0; 
+            font-size: 9px; 
+            font-weight: bold;
+        }
+        .date-in-signature { 
+            text-align: center !important;
+            margin: 0 0 50px 0 !important;
+            font-size: 12px !important;
+        }
         .print-button-container { 
             position: fixed; 
             top: 20px; 
@@ -313,7 +359,7 @@ export class DocumentoComponent implements OnInit {
         <h1>Oficina de Criminalística</h1>
     </div>
     <div class="title-container">
-        <span class="title">INFORME PERICIAL DE DOSAJE ETILICO</span>
+        <span class="title">${doc.nombreDocumento || tituloInforme}</span>
     </div>
     <div class="report-number">
         Nº ${doc.nro_registro || 'S/N'}/${anioHoy}
@@ -356,93 +402,69 @@ export class DocumentoComponent implements OnInit {
         <div class="full-width-section">
             <div class="section-title">I. MOTIVACIÓN DEL EXAMEN</div>
             <div class="section-content">
-                Motivo del examen ${doc.delitoInfraccion || ''}. Se procedió a efectuar el examen de dosaje etílico, empleando la prueba cualitativa y cuantitativa en aliento y sheffel modificado para la prueba cuantitativa, con el siguiente resultado:
+                Motivo del examen ${doc.delitoInfraccion || ''}. Se procedió a efectuar el examen, con el siguiente resultado:
             </div>
         </div>
+        
+        <!-- ✅ TABLA DINÁMICA SEGÚN ROL -->
         <table class="results-table">
-            <tr> <th>EXAMEN</th> <th>M-1</th> </tr>
-            <tr> <td>Cualitativo</td> <td><strong>${doc.cualitativo || ''}</strong></td> </tr>
-            <tr> <td>Cuantitativo</td> <td><strong>${doc.cuantitativo || '0.0'} g/l</strong></td> </tr>
+          <tr> <th>EXAMEN</th> <th>M-1</th> </tr>
+          <tr> <td>Cualitativo</td> <td><strong>${valorCualitativo}</strong></td> </tr>
+          <tr> <td>Cuantitativo</td> <td><strong>${valorCuantitativo}</strong></td> </tr>
         </table>
+
         <div class="full-width-section">
             <div class="section-title">J. CONCLUSIONES</div>
             <div class="section-content">
-                En la muestra M-1 (${doc.tipoMuestra || ''}) analizado dio de resultado <strong>${doc.cualitativo || ''}</strong> para examen cualitativo 
-                y de alcoholemia <strong>${doc.cuantitativo || '0.0'} g/l (${this.numeroALetras(doc.cuantitativo || '0')})</strong>
-                en analisis cuantitativo. La muestra procesada queda en laboratorio en calidad de custodia durante el tiempo establecido por ley (Directiva N° 18-03-27)
+                En la muestra M-1 (${doc.tipoMuestra || ''}) analizada se obtuvo un resultado <strong> ${valorCualitativo}</strong> para examen cualitativo
+                y de alcoholemia<strong> ${valorCuantitativoTexto}</strong> en análisis cuantitativo. La muestra procesada queda en laboratorio en calidad de 
+                custodia durante el tiempo establecido por ley (Directiva N° 18-03-27)
             </div>
         </div>
         <div class="full-width-section">
-            <div class="section-title">K. ANEXOS</div>
-            <div class="section-content" style="text-align: left;">
-                ${anexosHtml}
-            </div>
+      <div class="dual-box-container" style="display: flex; justify-content: space-between; margin-top: 30px;">
+        <!-- Caja izquierda: Anexos -->
+        <div style="width: 48%;">
+          <h6 class="section-title" style="margin-bottom: 8px; font-weight: bold;">K. ANEXOS</h6>
+          <div style="text-align: left;">
+            ${anexosHtml}
+          </div>
+        </div>
+        <!-- Caja derecha: Fecha + Firma -->
+        <div style="width: 48%; text-align: center;">
+          <p style="margin-bottom: 80px; font-size: 12px;">Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.</p>
+          <img src="${rutaFirma}" alt="Firma del perito" style="width: 200px; height: auto; border: none;">
+        </div>
+      </div>
+    </div>
+    <div class="custom-footer">
+          Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
+          Email: oficricuscomail.com
         </div>
     </div>
 
-    <!-- Fecha encima de la firma -->
-    <div class="signature-area">
-        <div class="signature-block">
-            <p class="date-in-signature">Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.</p>
-            <div class="signature-line"></div>
-            <p>OS - 419397</p>
-            <p>JAVIER ALEXANDER HUAMANI CORDOVA</p>
-            <p>CAP S PNP</p>
-            <p>QUIMICO FARMACÉUTICO</p>
-            <p>CQFP N°20289</p>
-        </div>
-    </div>
-
+    <style>
+      .custom-footer {
+        position: absolute;
+        bottom: 0 ;
+        left: 0;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: white;
+        font-size: 7pt;
+        color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        text-align: center;
+      }
+    </style>
 </body>
 </html>
-      `);
+    `);
       printWindow.document.close();
       printWindow.focus();
     }
   }
-
- private numeroALetras(numStr: string): string {
-  const num = parseFloat(numStr);
-  if (isNaN(num)) return '';
-
-  const [enteroStr, decimalStr] = numStr.split('.');
-  let entero = parseInt(enteroStr, 10);
-
-  const unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
-  const especiales = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
-  const decenas = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
-
-  function convertir(n: number): string {
-    if (n < 10) return unidades[n];
-    if (n < 20) return especiales[n - 10];
-    if (n < 100) {
-      const u = n % 10;
-      const d = Math.floor(n / 10);
-      return decenas[d] + (u > 0 ? ' y ' + unidades[u] : '');
-    }
-    return '';
-  }
-
-  // ✅ Manejo de "gramo" vs "gramos"
-  let texto: string;
-  if (entero === 1) {
-    texto = 'un gramo';
-  } else {
-    const parteEntera = entero > 0 ? convertir(entero) : 'cero';
-    texto = parteEntera + ' gramos';
-  }
-
-  // ✅ Manejo de decimales (centigramos)
-  if (decimalStr) {
-    const decimalNum = parseInt(decimalStr.padEnd(2, '0'), 10);
-    if (decimalNum > 0) {
-      const parteDecimal = decimalNum < 100 ? convertir(decimalNum) : '';
-      texto += ' con ' + parteDecimal;
-    }
-  }
-
-  // ✅ Formato final
-  const resultado = texto + ' cg x l. de sangre';
-  return resultado.charAt(0).toUpperCase() + resultado.slice(1);
-}
 }

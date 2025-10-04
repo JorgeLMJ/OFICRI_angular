@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { UsuarioService } from '../../../services/usuario.service';
 import { EmpleadoService } from '../../../services/Empleado.service';
 import { DocumentoService } from '../../../services/documento.service';
-import { AsignacionService } from '../../../services/asignacion.service';
+import { DosajeService } from '../../../services/dosaje.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
     private usuarioService: UsuarioService,
     private empleadoService: EmpleadoService,
     private documentoService: DocumentoService,
-    private asignacionService: AsignacionService
+    private dosajeService: DosajeService
   ) {}
 
   ngOnInit(): void {
@@ -65,10 +65,7 @@ export class HomeComponent implements OnInit {
       error: (err) => console.error('Error cargando documentos', err)
     });
 
-    this.asignacionService.getAsignaciones().subscribe({
-      next: (data) => this.stats.asignaciones = data.length,
-      error: (err) => console.error('Error cargando asignaciones', err)
-    });
+
   }
 
   refreshStats(): void {

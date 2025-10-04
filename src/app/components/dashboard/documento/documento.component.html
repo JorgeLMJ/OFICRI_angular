@@ -41,6 +41,7 @@
           <div class="mb-4">
             <h6 class="text-primary mb-3"><i class="bi bi-file-earmark me-2"></i>📄 Oficio</h6>
             <div class="row">
+              <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>Nombre documento:</strong><p class="mb-1">{{ doc.nombreDocumento }}</p></div>
               <div class="col-12 mb-2"><strong><i class="bi bi-calendar-date me-2 text-primary"></i>Fecha Ingreso:</strong><p class="mb-1">{{ formatDate(doc.fechaIngreso) }}</p></div>
               <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>N° Oficio:</strong><p class="mb-1">{{ doc.nroOficio }}</p></div>
               <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>Nombre Oficio:</strong><p class="mb-1">{{ doc.nombreOficio }}</p></div>
@@ -63,8 +64,7 @@
               <div class="col-12 mb-2"><strong><i class="bi bi-droplet me-2 text-primary"></i>Tipo Muestra:</strong><p class="mb-1">{{ doc.tipoMuestra || 'N/A' }}</p></div>
               <div class="col-12 mb-2"><strong><i class="bi bi-person-vcard me-2 text-primary"></i>Conduce:</strong><p class="mb-1">{{ doc.personaQueConduce || 'N/A' }}</p></div>
               <div class="col-12 mb-2"><strong><i class="bi bi-check-circle me-2 text-primary"></i>Cualitativo:</strong><p class="mb-1">{{ doc.cualitativo || 'N/A' }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-graph-up me-2 text-primary"></i>Cuantitativo:</strong><p class="mb-0">{{ doc.cuantitativo || 'N/A' }} g/l</p></div>
-            </div>
+              
           </div>
           <div *ngIf="getAnexosSeleccionados(doc.anexos) as listaAnexos">
             <div *ngIf="listaAnexos.length > 0">

@@ -6,7 +6,7 @@ import { Documento } from '../../../models/documento.model';
 import { DocumentoService } from '../../../services/documento.service';
 import Swal from 'sweetalert2';
 import { GeminiOcrService, OCRResult } from '../../../services/gemini-ocr.service';
-import { AuthService } from '../../../services/auth.service'; // ✅ Importado
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-documento-registro',
@@ -18,7 +18,11 @@ export class DocumentoRegistroComponent implements OnInit {
   documentoForm!: FormGroup;
   isEditMode = false;
   currentDocId: number | null = null;
-  isAdmin = false; // ✅ Nueva propiedad
+  currentUserRole: string = '';
+  isAdmin = false;
+
+  // ✅ Nueva propiedad para controlar si nombreDocumento es de solo lectura
+  nombreDocumentoReadOnly = false;
 
   constructor(
     private fb: FormBuilder,
@@ -26,15 +30,20 @@ export class DocumentoRegistroComponent implements OnInit {
     private route: ActivatedRoute,
     private documentoService: DocumentoService,
     private geminiOcr: GeminiOcrService,
-    private authService: AuthService // ✅ Inyectado
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    // ✅ Verificar rol del usuario
     const currentUser = this.authService.getCurrentUser();
-    this.isAdmin = currentUser?.rol === 'Administrador'; // Ajusta según tu modelo
+    this.currentUserRole = currentUser?.rol || '';
+    this.isAdmin = this.currentUserRole === 'Administrador';
 
     this.initializeForm();
+
+    // ✅ Establecer valor y modo de solo lectura según el rol (solo en creación)
+    if (!this.isEditMode) {
+      this.setNombreDocumentoByRole();
+    }
 
     this.route.params.subscribe(params => {
       const id = params['id'];
@@ -49,7 +58,8 @@ export class DocumentoRegistroComponent implements OnInit {
   initializeForm(): void {
     this.documentoForm = this.fb.group({
       id: [null],
-      nro_registro: ['', [Validators.required, Validators.min(1)]], // ✅ Ahora incluido
+      nombreDocumento: ['', Validators.required],
+      nro_registro: ['', [Validators.required]],
       fechaIngreso: ['', Validators.required],
       nroOficio: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
       nombreOficio: ['', Validators.required],
@@ -67,7 +77,6 @@ export class DocumentoRegistroComponent implements OnInit {
       tipoMuestra: [''],
       personaQueConduce: [''],
       cualitativo: [''],
-      cuantitativo: [''],
       anexos: this.fb.group({
         cadenaCustodia: [false],
         rotulo: [false],
@@ -79,10 +88,20 @@ export class DocumentoRegistroComponent implements OnInit {
         actaObtencionMuestra: [false]
       })
     });
+  }
 
-    // ✅ Desactivar cuantitativo si no es admin
-    if (!this.isAdmin) {
-      this.documentoForm.get('cuantitativo')?.disable();
+  // ✅ Método para establecer nombreDocumento según el rol
+  private setNombreDocumentoByRole(): void {
+    let nombreDoc = '';
+    if (this.currentUserRole === 'Auxiliar de Dosaje') {
+      nombreDoc = 'INFORME PERICIAL DE DOSAJE';
+    } else if (this.currentUserRole === 'Auxiliar de Toxicologia') {
+      nombreDoc = 'INFORME PERICIAL DE TOXICOLOGIA';
+    }
+
+    if (nombreDoc) {
+      this.documentoForm.patchValue({ nombreDocumento: nombreDoc });
+      this.nombreDocumentoReadOnly = true;
     }
   }
 
@@ -94,10 +113,9 @@ export class DocumentoRegistroComponent implements OnInit {
           fechaHoraIncidente: this.combineDateTime(doc.fechaIncidente, doc.horaIncidente),
           anexos: doc.anexos || {}
         });
-        // ✅ Si no es admin, desactivar después de cargar
-        if (!this.isAdmin) {
-          this.documentoForm.get('cuantitativo')?.disable();
-        }
+
+        // En modo edición, permitir edición del nombreDocumento si es admin
+        this.nombreDocumentoReadOnly = !this.isAdmin;
       },
       error: (err) => {
         console.error("Error al cargar el documento para editar", err);
@@ -129,9 +147,7 @@ export class DocumentoRegistroComponent implements OnInit {
       return;
     }
 
-    // ✅ Usa getRawValue() para incluir campos desactivados (como cuantitativo)
     const formValue = this.documentoForm.getRawValue();
-
     const { fecha: fechaIncidente, hora: horaIncidente } = this.splitDateTime(formValue.fechaHoraIncidente);
     
     const documentoPayload: Documento = {
@@ -140,6 +156,8 @@ export class DocumentoRegistroComponent implements OnInit {
       horaIncidente
     };
     delete (documentoPayload as any).fechaHoraIncidente;
+
+    console.log('Payload a enviar al servicio:', documentoPayload);
 
     if (this.isEditMode && this.currentDocId) {
       documentoPayload.id = this.currentDocId;
@@ -205,7 +223,7 @@ export class DocumentoRegistroComponent implements OnInit {
  
   private fillFormFromOCR(data: OCRResult): void {
     this.documentoForm.patchValue({
-      nro_registro: '', // ✅ No se llena por OCR, se deja vacío o se genera en backend
+      nro_registro: '',
       nroOficio: this.cleanNumber(data.nro_oficio) || '',
       nombreOficio: data.nombre_oficio || '',
       asunto: data.asunto || '',
@@ -228,9 +246,9 @@ export class DocumentoRegistroComponent implements OnInit {
     const hoy = new Date().toISOString().split('T')[0];
     this.documentoForm.patchValue({ fechaIngreso: hoy });
 
-    // ✅ Si no es admin, asegurar que cuantitativo esté desactivado tras OCR
-    if (!this.isAdmin) {
-      this.documentoForm.get('cuantitativo')?.disable();
+    // ✅ Si se usa OCR en creación, respetar el nombre por rol
+    if (!this.isEditMode) {
+      this.setNombreDocumentoByRole();
     }
   }
 

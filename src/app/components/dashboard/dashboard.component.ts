@@ -25,7 +25,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { title: 'Inicio', icon: 'bi-house-door', route: '/dashboard', roles: ['Administrador'] },
     { title: 'Empleados', icon: 'bi-people', route: '/dashboard/empleados', roles: ['Administrador'] },
     { title: 'Documentos', icon: 'bi-file-earmark-text', route: '/dashboard/documento', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] },
-    { title: 'Asignaciones', icon: 'bi-journal-text', route: '/dashboard/asignaciones', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] },
+    { title: 'Asignaciones Dosaje', icon: 'bi-journal-text', route: '/dashboard/asignaciones-dosaje', roles: ['Administrador', 'Auxiliar de Dosaje','Quimico Farmaceutico'] },
+    { title: 'Oficio Dosaje', icon: 'bi-file-earmark-medical', route: '/dashboard/oficio-dosaje', roles: ['Administrador', 'Auxiliar de Dosaje'] },
+    { title: 'Asignaciones Toxicología', icon: 'bi-beaker', route: '/dashboard/asignaciones-toxicologia', roles: ['Administrador', 'Auxiliar de Toxicologia','Quimico Farmaceutico'] },
     { title: 'Usuarios', icon: 'bi-person-gear', route: '/dashboard/usuarios', roles: ['Administrador'] },
     { title: 'Reportes', icon: 'bi-bar-chart', route: '/dashboard/reportes', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] }
   ];
@@ -156,7 +158,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getCurrentPageTitle(): string {
     const currentRoute = this.router.url;
-    const menuItem = this.filteredMenuItems.find(item => currentRoute.includes(item.route));
+    // ✅ Ajuste para que el título también se actualice en las rutas de toxicología
+    const menuItem = this.filteredMenuItems.find(item => currentRoute.startsWith(item.route));
     return menuItem ? menuItem.title : 'Panel de Control';
   }
 

@@ -45,8 +45,8 @@ export class EmpleadoRegistroComponent implements OnInit {
       apellido: ['', Validators.required],
       dni: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       telefono: [''],
-      //cargo: [{ value: '', disabled: true }],
       cargo: ['', Validators.required],
+      estado: ['ACTIVO'], // ✅ Valor por defecto: ACTIVO
       usuarioId: [null, Validators.required],
       usuarioEmail: ['']
     });
@@ -83,7 +83,12 @@ export class EmpleadoRegistroComponent implements OnInit {
       if (id) {
         this.editMode = true;
         this.empleadoService.getById(id).subscribe((emp: EmpleadoDTO) => {
-          this.empleadoForm.patchValue(emp);
+          // ✅ Aseguramos que el estado sea string ('ACTIVO' o 'INACTIVO')
+          const estado = emp.estado || 'ACTIVO';
+          this.empleadoForm.patchValue({
+            ...emp,
+            estado: estado // Esto activará/desactivará el switch
+          });
 
           if (emp.usuarioId) {
             this.usuarioService.getById(emp.usuarioId).subscribe({
@@ -113,7 +118,7 @@ export class EmpleadoRegistroComponent implements OnInit {
     );
   }
 
-  // 🔹 Seleccionar usuario — ¡SIN RESTRICCIONES!
+  // 🔹 Seleccionar usuario
   seleccionarUsuario(usuario: Usuario): void {
     this.empleadoForm.patchValue({
       usuarioId: usuario.id,

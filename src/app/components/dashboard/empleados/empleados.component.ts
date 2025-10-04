@@ -50,14 +50,14 @@ export class EmpleadosComponent implements OnInit {
     });
   }
 
-  // ======= BUSCADOR + PAGINACIÓN =======
-  get filteredEmpleados(): EmpleadoDTO[] {
-    const q = this.searchTerm.trim().toLowerCase();
-    if (!q) return [...this.empleados];
-    return this.empleados.filter(e =>
-      [e.nombre, e.apellido, e.dni, e.usuarioEmail].some(v => (v || '').toLowerCase().includes(q))
-    );
-  }
+  // En el getter filteredEmpleados, incluye el estado en la búsqueda
+get filteredEmpleados(): EmpleadoDTO[] {
+  const q = this.searchTerm.trim().toLowerCase();
+  if (!q) return [...this.empleados];
+  return this.empleados.filter(e =>
+    [e.nombre, e.apellido, e.dni, e.usuarioEmail, e.estado].some(v => (v || '').toLowerCase().includes(q))
+  );
+}
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredEmpleados.length / this.pageSize));
